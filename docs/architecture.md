@@ -131,6 +131,62 @@ For HuggingFace GGUF models, KAITO uses in-cluster image building:
 - **BuildKitService** (`backend/src/services/buildkit.ts`): Manages BuildKit builder
 - **AikitService** (`backend/src/services/aikit.ts`): Handles GGUF image building
 
+## Gateway API Inference Extension (GAIE)
+
+KubeFoundry supports the [Gateway API Inference Extension](https://gateway-api-inference-extension.sigs.k8s.io/) for intelligent, body-based model routing. This enables serving multiple models behind a single endpoint using standard Gateway API resources.
+
+### How It Works
+
+```
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│   Client     │────▶│  Body-Based     │────▶│  HTTPRoute   │
+│   Request    │     │  Router (BBR)   │     │  (per model) │
+└──────────────┘     └─────────────────┘     └──────┬───────┘
+                              │                      │
+                     Extracts model name    Matches header
+                     from request body      X-Gateway-Model-Name
+                              │                      │
+                              ▼                      ▼
+                     X-Gateway-Model-Name    ┌──────────────┐
+                     header added            │  Backend     │
+                                             │  Service     │
+                                             └──────────────┘
+```
+
+### Configuration
+
+When creating a deployment with `enableGatewayRouting: true`, KubeFoundry automatically creates:
+
+1. **HTTPRoute** - Routes requests based on `X-Gateway-Model-Name` header
+2. **Backend Reference** - Points to the appropriate service for the model
+3. **Header Match** - Uses the model name (from `servedModelName` or `modelId`)
+
+**Example:**
+```json
+{
+  "name": "llama-model",
+  "modelId": "meta-llama/Llama-3.2-1B",
+  "servedModelName": "llama-1b",
+  "enableGatewayRouting": true,
+  ...
+}
+```
+
+Creates an HTTPRoute that routes requests with header `X-Gateway-Model-Name: llama-1b` to the deployment's service.
+
+### Requirements
+
+- Gateway API CRDs installed in cluster
+- A configured Gateway (default: `inference-gateway` in `gateway-system` namespace)
+- Body-Based Router (BBR) deployed to extract model names from request bodies
+
+### Provider Support
+
+All providers support GAIE:
+- **Dynamo**: Routes to service on port 8000
+- **KubeRay**: Routes to `{name}-serve-svc` service on port 8000
+- **KAITO**: Routes to service on port 80
+
 ## Data Models
 
 ### Model (Catalog Entry)
@@ -166,6 +222,7 @@ interface DeploymentConfig {
   enforceEager: boolean;
   enablePrefixCaching: boolean;
   trustRemoteCode: boolean;
+  enableGatewayRouting?: boolean; // Enable Gateway API Inference Extension routing
 }
 ```
 
