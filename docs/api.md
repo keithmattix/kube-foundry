@@ -498,7 +498,10 @@ Create a new deployment.
   "enforceEager": true,
   "enablePrefixCaching": false,
   "trustRemoteCode": false,
-  "enableGatewayRouting": false
+  "enableGatewayRouting": false,
+  "gatewayName": "inference-gateway",
+  "gatewayNamespace": "gateway-system",
+  "inferencePoolName": "my-inference-pool"
 }
 ```
 
@@ -513,9 +516,13 @@ Create a new deployment.
 **Optional Fields:**
 - `enableGatewayRouting` - Enable Gateway API Inference Extension (GAIE) routing (default: `false`)
   - When enabled, creates an HTTPRoute that routes requests based on the `X-Gateway-Model-Name` header
-  - Requires Gateway API CRDs and a configured Gateway (e.g., `inference-gateway` in `gateway-system` namespace)
+  - Requires Gateway API CRDs, a configured Gateway, and an InferencePool resource
   - The Body-Based Router (BBR) extracts model names from request bodies and adds them as headers
-  - Supported by all providers (Dynamo, KubeRay, KAITO)
+  - **Supported by**: Dynamo, KAITO (KubeRay does not support GAIE)
+  - **Required when enableGatewayRouting is true:**
+    - `gatewayName` - Name of the Gateway resource to attach the HTTPRoute to
+    - `gatewayNamespace` - Namespace of the Gateway resource
+    - `inferencePoolName` - Name of the InferencePool resource to use as the backend
 
 **Response:**
 ```json

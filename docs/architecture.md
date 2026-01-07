@@ -147,10 +147,10 @@ KubeFoundry supports the [Gateway API Inference Extension](https://gateway-api-i
                      from request body      X-Gateway-Model-Name
                               │                      │
                               ▼                      ▼
-                     X-Gateway-Model-Name    ┌──────────────┐
-                     header added            │  Backend     │
-                                             │  Service     │
-                                             └──────────────┘
+                     X-Gateway-Model-Name    ┌──────────────────┐
+                     header added            │  InferencePool   │
+                                             │  (Backend)       │
+                                             └──────────────────┘
 ```
 
 ### Configuration
@@ -158,7 +158,7 @@ KubeFoundry supports the [Gateway API Inference Extension](https://gateway-api-i
 When creating a deployment with `enableGatewayRouting: true`, KubeFoundry automatically creates:
 
 1. **HTTPRoute** - Routes requests based on `X-Gateway-Model-Name` header
-2. **Backend Reference** - Points to the appropriate service for the model
+2. **Backend Reference** - Points to an InferencePool resource (not a Service)
 3. **Header Match** - Uses the model name (from `servedModelName` or `modelId`)
 
 **Example:**
@@ -168,24 +168,28 @@ When creating a deployment with `enableGatewayRouting: true`, KubeFoundry automa
   "modelId": "meta-llama/Llama-3.2-1B",
   "servedModelName": "llama-1b",
   "enableGatewayRouting": true,
-  ...
+  "gatewayName": "inference-gateway",
+  "gatewayNamespace": "gateway-system",
+  "inferencePoolName": "my-inference-pool"
 }
 ```
 
-Creates an HTTPRoute that routes requests with header `X-Gateway-Model-Name: llama-1b` to the deployment's service.
+Creates an HTTPRoute that routes requests with header `X-Gateway-Model-Name: llama-1b` to the specified InferencePool.
 
 ### Requirements
 
 - Gateway API CRDs installed in cluster
-- A configured Gateway (default: `inference-gateway` in `gateway-system` namespace)
+- A configured Gateway resource (user must specify `gatewayName` and `gatewayNamespace`)
+- An InferencePool resource (user must specify `inferencePoolName`)
 - Body-Based Router (BBR) deployed to extract model names from request bodies
+- Endpoint Picker Plugin (EPP) for intelligent backend selection
 
 ### Provider Support
 
-All providers support GAIE:
-- **Dynamo**: Routes to service on port 8000
-- **KubeRay**: Routes to `{name}-serve-svc` service on port 8000
-- **KAITO**: Routes to service on port 80
+GAIE support varies by provider:
+- **Dynamo**: ✅ Supports GAIE - Routes to InferencePool
+- **KubeRay**: ❌ Does not support GAIE
+- **KAITO**: ✅ Supports GAIE - Routes to InferencePool
 
 ## Data Models
 

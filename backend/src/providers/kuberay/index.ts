@@ -1,7 +1,6 @@
 import * as k8s from '@kubernetes/client-node';
 import type { DeploymentConfig, DeploymentStatus, DeploymentPhase, MetricDefinition, MetricsEndpointConfig } from '@kubefoundry/shared';
 import type { Provider, CRDConfig, HelmRepo, HelmChart, InstallationStatus, InstallationStep, UninstallResources } from '../types';
-import { DEFAULT_GATEWAY_CONFIG } from '../types';
 import { kuberayDeploymentConfigSchema, type KubeRayDeploymentConfig } from './schema';
 import logger from '../../lib/logger';
 
@@ -890,56 +889,7 @@ export class KubeRayProvider implements Provider {
   }
 
   supportsGAIE(): boolean {
-    return true; // KubeRay supports Gateway API Inference Extension
-  }
-
-  generateHTTPRoute(config: DeploymentConfig): Record<string, unknown> {
-    const modelName = config.servedModelName || config.modelId;
-    const serviceName = `${config.name}-serve-svc`; // KubeRay creates service with -serve-svc suffix
-    
-    return {
-      apiVersion: 'gateway.networking.k8s.io/v1',
-      kind: 'HTTPRoute',
-      metadata: {
-        name: `${config.name}-route`,
-        namespace: config.namespace,
-        labels: {
-          'app.kubernetes.io/name': 'kubefoundry',
-          'app.kubernetes.io/instance': config.name,
-          'app.kubernetes.io/managed-by': 'kubefoundry',
-          'kubefoundry.io/provider': 'kuberay',
-        },
-      },
-      spec: {
-        parentRefs: [
-          {
-            name: DEFAULT_GATEWAY_CONFIG.name,
-            namespace: DEFAULT_GATEWAY_CONFIG.namespace,
-          },
-        ],
-        rules: [
-          {
-            matches: [
-              {
-                headers: [
-                  {
-                    type: 'Exact',
-                    name: 'X-Gateway-Model-Name',
-                    value: modelName,
-                  },
-                ],
-              },
-            ],
-            backendRefs: [
-              {
-                name: serviceName,
-                port: 8000, // Standard inference API port
-              },
-            ],
-          },
-        ],
-      },
-    };
+    return false; // KubeRay does not support Gateway API Inference Extension
   }
 
   getUninstallResources(): UninstallResources {

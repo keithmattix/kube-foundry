@@ -64,15 +64,6 @@ export interface UninstallResources {
 }
 
 /**
- * Default Gateway API configuration for GAIE (Gateway API Inference Extension)
- * These values can be overridden via environment variables if needed
- */
-export const DEFAULT_GATEWAY_CONFIG = {
-  name: process.env.GAIE_GATEWAY_NAME || 'inference-gateway',
-  namespace: process.env.GAIE_GATEWAY_NAMESPACE || 'gateway-system',
-} as const;
-
-/**
  * Provider interface - all inference providers must implement this
  */
 export interface Provider {
@@ -207,6 +198,9 @@ export const baseDeploymentConfigSchema = z.object({
   enablePrefixCaching: z.boolean().default(false),
   trustRemoteCode: z.boolean().default(false),
   enableGatewayRouting: z.boolean().default(false),
+  gatewayName: z.string().min(1).optional(),
+  gatewayNamespace: z.string().min(1).optional(),
+  inferencePoolName: z.string().min(1).optional(),
   resources: z.object({
     gpu: z.number().int().min(1).default(1),
     memory: z.string().optional(),

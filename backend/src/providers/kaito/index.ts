@@ -1,7 +1,6 @@
 import * as k8s from '@kubernetes/client-node';
 import type { DeploymentConfig, DeploymentStatus, DeploymentPhase, MetricDefinition, MetricsEndpointConfig } from '@kubefoundry/shared';
 import type { Provider, CRDConfig, HelmRepo, HelmChart, InstallationStatus, InstallationStep, UninstallResources } from '../types';
-import { DEFAULT_GATEWAY_CONFIG } from '../types';
 import { kaitoDeploymentConfigSchema, type KaitoDeploymentConfig } from './schema';
 import { aikitService, GGUF_RUNNER_IMAGE } from '../../services/aikit';
 import logger from '../../lib/logger';
@@ -759,8 +758,14 @@ export class KaitoProvider implements Provider {
 
   generateHTTPRoute(config: DeploymentConfig): Record<string, unknown> {
     const modelName = config.servedModelName || config.modelId;
-    // KAITO creates service name from workspace name
-    const serviceName = config.name;
+    
+    if (!config.gatewayName || !config.gatewayNamespace) {
+      throw new Error('gatewayName and gatewayNamespace are required when enableGatewayRouting is true');
+    }
+    
+    if (!config.inferencePoolName) {
+      throw new Error('inferencePoolName is required when enableGatewayRouting is true');
+    }
     
     return {
       apiVersion: 'gateway.networking.k8s.io/v1',
@@ -778,8 +783,8 @@ export class KaitoProvider implements Provider {
       spec: {
         parentRefs: [
           {
-            name: DEFAULT_GATEWAY_CONFIG.name,
-            namespace: DEFAULT_GATEWAY_CONFIG.namespace,
+            name: config.gatewayName,
+            namespace: config.gatewayNamespace,
           },
         ],
         rules: [
@@ -797,8 +802,9 @@ export class KaitoProvider implements Provider {
             ],
             backendRefs: [
               {
-                name: serviceName,
-                port: 80, // KAITO uses port 80 for inference
+                group: 'inference.networking.k8s.io',
+                kind: 'InferencePool',
+                name: config.inferencePoolName,
               },
             ],
           },

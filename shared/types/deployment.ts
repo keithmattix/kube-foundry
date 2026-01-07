@@ -27,6 +27,11 @@ export interface DeploymentConfig {
   };
   engineArgs?: Record<string, unknown>;  // Engine-specific arguments
   enableGatewayRouting?: boolean;        // Enable Gateway API Inference Extension routing
+  
+  // Gateway API Inference Extension (GAIE) configuration
+  gatewayName?: string;                  // Gateway name for HTTPRoute parentRef (required if enableGatewayRouting is true)
+  gatewayNamespace?: string;             // Gateway namespace for HTTPRoute parentRef (required if enableGatewayRouting is true)
+  inferencePoolName?: string;            // InferencePool name for HTTPRoute backendRef (required if enableGatewayRouting is true)
 
   // Disaggregated mode configuration (P/D separation)
   prefillReplicas?: number;      // Number of prefill worker replicas
