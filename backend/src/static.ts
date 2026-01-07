@@ -37,7 +37,13 @@ const staticFiles = new Map<string, StaticFile>();
 
 // Check if running as compiled binary
 export const isCompiled = (): boolean => {
-  return import.meta.dir.includes('/$bunfs/') || process.env.BUN_SELF_EXECUTABLE !== undefined;
+  try {
+    // Use type assertion for import.meta in Bun/Node environments
+    const meta = (import.meta as any);
+    return meta?.dir?.includes('/$bunfs/') || process.env.BUN_SELF_EXECUTABLE !== undefined;
+  } catch {
+    return process.env.BUN_SELF_EXECUTABLE !== undefined;
+  }
 };
 
 // Try to load embedded assets (only exists in compiled binary)
@@ -63,7 +69,9 @@ async function loadEmbeddedAssets(): Promise<boolean> {
 
 // Load files from filesystem (development mode)
 async function loadFilesFromDisk(): Promise<boolean> {
-  const staticDir = path.join(import.meta.dir, '../../frontend/dist');
+  // Use type assertion for import.meta compatibility
+  const meta = (import.meta as any);
+  const staticDir = path.join(meta?.dir || __dirname, '../../frontend/dist');
   
   if (!fs.existsSync(staticDir)) {
     logger.warn({ staticDir }, `Frontend build not found: ${staticDir}`);
