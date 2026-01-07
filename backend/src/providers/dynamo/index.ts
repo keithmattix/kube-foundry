@@ -1,6 +1,7 @@
 import * as k8s from '@kubernetes/client-node';
 import type { DeploymentConfig, DeploymentStatus, DeploymentPhase, MetricDefinition, MetricsEndpointConfig } from '@kubefoundry/shared';
 import type { Provider, CRDConfig, HelmRepo, HelmChart, InstallationStatus, InstallationStep, UninstallResources } from '../types';
+import { DEFAULT_GATEWAY_CONFIG } from '../types';
 import { dynamoDeploymentConfigSchema, type DynamoDeploymentConfig } from './schema';
 import logger from '../../lib/logger';
 
@@ -887,8 +888,8 @@ export class DynamoProvider implements Provider {
       spec: {
         parentRefs: [
           {
-            name: 'inference-gateway', // Default gateway name, can be configured
-            namespace: 'gateway-system',
+            name: DEFAULT_GATEWAY_CONFIG.name,
+            namespace: DEFAULT_GATEWAY_CONFIG.namespace,
           },
         ],
         rules: [

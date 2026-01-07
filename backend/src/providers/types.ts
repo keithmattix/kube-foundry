@@ -64,6 +64,15 @@ export interface UninstallResources {
 }
 
 /**
+ * Default Gateway API configuration for GAIE (Gateway API Inference Extension)
+ * These values can be overridden via environment variables if needed
+ */
+export const DEFAULT_GATEWAY_CONFIG = {
+  name: process.env.GAIE_GATEWAY_NAME || 'inference-gateway',
+  namespace: process.env.GAIE_GATEWAY_NAMESPACE || 'gateway-system',
+} as const;
+
+/**
  * Provider interface - all inference providers must implement this
  */
 export interface Provider {
