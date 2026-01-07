@@ -169,27 +169,26 @@ When creating a deployment with `enableGatewayRouting: true`, KubeFoundry automa
   "servedModelName": "llama-1b",
   "enableGatewayRouting": true,
   "gatewayName": "inference-gateway",
-  "gatewayNamespace": "gateway-system",
-  "inferencePoolName": "my-inference-pool"
+  "gatewayNamespace": "gateway-system"
 }
 ```
 
-Creates an HTTPRoute that routes requests with header `X-Gateway-Model-Name: llama-1b` to the specified InferencePool.
+Creates an HTTPRoute that routes requests with header `X-Gateway-Model-Name: llama-1b` to the InferencePool named `llama-model-pool` (automatically generated from deployment name).
 
 ### Requirements
 
 - Gateway API CRDs installed in cluster
 - A configured Gateway resource (user must specify `gatewayName` and `gatewayNamespace`)
-- An InferencePool resource (user must specify `inferencePoolName`)
+- An InferencePool resource matching the naming convention: `{deployment-name}-pool`
 - Body-Based Router (BBR) deployed to extract model names from request bodies
 - Endpoint Picker Plugin (EPP) for intelligent backend selection
 
 ### Provider Support
 
 GAIE support varies by provider:
-- **Dynamo**: ✅ Supports GAIE - Routes to InferencePool
+- **Dynamo**: ✅ Supports GAIE - Routes to InferencePool `{name}-pool`
 - **KubeRay**: ❌ Does not support GAIE
-- **KAITO**: ✅ Supports GAIE - Routes to InferencePool
+- **KAITO**: ✅ Supports GAIE - Routes to InferencePool `{name}-pool`
 
 ## Data Models
 

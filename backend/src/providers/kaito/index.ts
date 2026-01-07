@@ -763,9 +763,8 @@ export class KaitoProvider implements Provider {
       throw new Error('gatewayName and gatewayNamespace are required when enableGatewayRouting is true');
     }
     
-    if (!config.inferencePoolName) {
-      throw new Error('inferencePoolName is required when enableGatewayRouting is true');
-    }
+    // KAITO convention: InferencePool name is based on workspace/deployment name with -pool suffix
+    const inferencePoolName = `${config.name}-pool`;
     
     return {
       apiVersion: 'gateway.networking.k8s.io/v1',
@@ -804,7 +803,7 @@ export class KaitoProvider implements Provider {
               {
                 group: 'inference.networking.k8s.io',
                 kind: 'InferencePool',
-                name: config.inferencePoolName,
+                name: inferencePoolName,
               },
             ],
           },

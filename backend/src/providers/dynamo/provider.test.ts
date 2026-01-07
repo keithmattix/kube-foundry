@@ -434,7 +434,6 @@ describe('DynamoProvider', () => {
         enableGatewayRouting: true,
         gatewayName: 'inference-gateway',
         gatewayNamespace: 'gateway-system',
-        inferencePoolName: 'my-inference-pool',
       };
 
       const httpRoute = provider.generateHTTPRoute!(config);
@@ -461,7 +460,6 @@ describe('DynamoProvider', () => {
         enableGatewayRouting: true,
         gatewayName: 'inference-gateway',
         gatewayNamespace: 'gateway-system',
-        inferencePoolName: 'my-inference-pool',
       };
 
       const httpRoute = provider.generateHTTPRoute!(config);
@@ -490,7 +488,6 @@ describe('DynamoProvider', () => {
         enableGatewayRouting: true,
         gatewayName: 'inference-gateway',
         gatewayNamespace: 'gateway-system',
-        inferencePoolName: 'my-inference-pool',
       };
 
       const httpRoute = provider.generateHTTPRoute!(config);
@@ -500,7 +497,7 @@ describe('DynamoProvider', () => {
       expect(headerMatch.value).toBe('llama-1b');
     });
 
-    test('HTTPRoute has correct InferencePool backend reference', () => {
+    test('HTTPRoute has correct InferencePool backend reference with dynamic naming', () => {
       const config: DeploymentConfig = {
         name: 'my-model',
         namespace: 'test-ns',
@@ -516,7 +513,6 @@ describe('DynamoProvider', () => {
         enableGatewayRouting: true,
         gatewayName: 'inference-gateway',
         gatewayNamespace: 'gateway-system',
-        inferencePoolName: 'my-inference-pool',
       };
 
       const httpRoute = provider.generateHTTPRoute!(config);
@@ -525,7 +521,7 @@ describe('DynamoProvider', () => {
       expect(backendRefs).toHaveLength(1);
       expect(backendRefs[0].group).toBe('inference.networking.k8s.io');
       expect(backendRefs[0].kind).toBe('InferencePool');
-      expect(backendRefs[0].name).toBe('my-inference-pool');
+      expect(backendRefs[0].name).toBe('my-model-pool'); // Dynamic naming: {name}-pool
       expect(backendRefs[0].port).toBeUndefined(); // InferencePool doesn't use port
     });
 
@@ -545,7 +541,6 @@ describe('DynamoProvider', () => {
         enableGatewayRouting: true,
         gatewayName: 'inference-gateway',
         gatewayNamespace: 'gateway-system',
-        inferencePoolName: 'my-inference-pool',
       };
 
       const httpRoute = provider.generateHTTPRoute!(config);
@@ -572,31 +567,9 @@ describe('DynamoProvider', () => {
         trustRemoteCode: false,
         enableGatewayRouting: true,
         gatewayNamespace: 'gateway-system',
-        inferencePoolName: 'my-inference-pool',
       };
 
       expect(() => provider.generateHTTPRoute!(config)).toThrow('gatewayName and gatewayNamespace are required');
-    });
-
-    test('generateHTTPRoute throws error when inferencePoolName is missing', () => {
-      const config: DeploymentConfig = {
-        name: 'test-deployment',
-        namespace: 'test-ns',
-        modelId: 'meta-llama/Llama-3.2-1B',
-        engine: 'vllm',
-        mode: 'aggregated',
-        routerMode: 'none',
-        replicas: 1,
-        hfTokenSecret: 'hf-token',
-        enforceEager: true,
-        enablePrefixCaching: false,
-        trustRemoteCode: false,
-        enableGatewayRouting: true,
-        gatewayName: 'inference-gateway',
-        gatewayNamespace: 'gateway-system',
-      };
-
-      expect(() => provider.generateHTTPRoute!(config)).toThrow('inferencePoolName is required');
     });
     });
   });

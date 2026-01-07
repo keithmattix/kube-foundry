@@ -200,7 +200,6 @@ export const baseDeploymentConfigSchema = z.object({
   enableGatewayRouting: z.boolean().default(false),
   gatewayName: z.string().min(1).optional(),
   gatewayNamespace: z.string().min(1).optional(),
-  inferencePoolName: z.string().min(1).optional(),
   resources: z.object({
     gpu: z.number().int().min(1).default(1),
     memory: z.string().optional(),
@@ -214,14 +213,14 @@ export const baseDeploymentConfigSchema = z.object({
   decodeGpus: z.number().int().min(1).default(1).describe('GPUs per decode worker'),
 }).refine(
   (data) => {
-    // If enableGatewayRouting is true, require gateway and inference pool configuration
+    // If enableGatewayRouting is true, require gateway configuration
     if (data.enableGatewayRouting) {
-      return data.gatewayName && data.gatewayNamespace && data.inferencePoolName;
+      return data.gatewayName && data.gatewayNamespace;
     }
     return true;
   },
   {
-    message: 'gatewayName, gatewayNamespace, and inferencePoolName are required when enableGatewayRouting is true',
+    message: 'gatewayName and gatewayNamespace are required when enableGatewayRouting is true',
     path: ['enableGatewayRouting'],
   }
 );

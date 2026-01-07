@@ -500,8 +500,7 @@ Create a new deployment.
   "trustRemoteCode": false,
   "enableGatewayRouting": false,
   "gatewayName": "inference-gateway",
-  "gatewayNamespace": "gateway-system",
-  "inferencePoolName": "my-inference-pool"
+  "gatewayNamespace": "gateway-system"
 }
 ```
 
@@ -519,10 +518,10 @@ Create a new deployment.
   - Requires Gateway API CRDs, a configured Gateway, and an InferencePool resource
   - The Body-Based Router (BBR) extracts model names from request bodies and adds them as headers
   - **Supported by**: Dynamo, KAITO (KubeRay does not support GAIE)
+  - **InferencePool naming**: Automatically generated as `{deployment-name}-pool` (e.g., `qwen-deployment-pool`)
   - **Required when enableGatewayRouting is true:**
     - `gatewayName` - Name of the Gateway resource to attach the HTTPRoute to
     - `gatewayNamespace` - Namespace of the Gateway resource
-    - `inferencePoolName` - Name of the InferencePool resource to use as the backend
 
 **Response:**
 ```json

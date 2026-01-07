@@ -874,9 +874,8 @@ export class DynamoProvider implements Provider {
       throw new Error('gatewayName and gatewayNamespace are required when enableGatewayRouting is true');
     }
     
-    if (!config.inferencePoolName) {
-      throw new Error('inferencePoolName is required when enableGatewayRouting is true');
-    }
+    // Dynamo convention: InferencePool name is based on deployment name with -pool suffix
+    const inferencePoolName = `${config.name}-pool`;
     
     return {
       apiVersion: 'gateway.networking.k8s.io/v1',
@@ -915,7 +914,7 @@ export class DynamoProvider implements Provider {
               {
                 group: 'inference.networking.k8s.io',
                 kind: 'InferencePool',
-                name: config.inferencePoolName,
+                name: inferencePoolName,
               },
             ],
           },
